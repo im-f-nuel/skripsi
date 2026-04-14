@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # Backend API Service (digunakan bersama oleh kedua frontend)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: carbfood-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/models:/app/models
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - carbfood-network
+    restart: unless-stopped
+
+  # Frontend Penelitian (full 7 halaman + auth + history)
+  frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: carbfood-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - carbfood-network
+    restart: unless-stopped
+
+  # Frontend Skripsi (4 halaman: Dashboard, Deteksi, Info Model, API Docs)
+  frontend-skripsi:
+    build:
+      context: ./web-skripsi
+      dockerfile: Dockerfile
+    container_name: carbfood-skripsi
+    ports:
+      - "3001:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - carbfood-network
+    restart: unless-stopped
+
+networks:
+  carbfood-network:
+    driver: bridge
