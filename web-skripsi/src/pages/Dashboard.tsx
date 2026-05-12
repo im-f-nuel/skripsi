@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Icon from '../components/Icon'
 import { getSession } from '../lib/session'
+import { apiUrl } from '../lib/api'
 
 interface HealthStatus {
   status: 'ok' | 'error' | 'loading'
@@ -21,7 +22,7 @@ export default function Dashboard() {
   const [health, setHealth] = useState<HealthStatus>({ status: 'loading', modelLoaded: false })
 
   useEffect(() => {
-    fetch('/api/health')
+    fetch(apiUrl('/api/health'))
       .then((r) => r.json())
       .then((d) => setHealth({ status: d.status === 'ok' ? 'ok' : 'error', modelLoaded: d.model_loaded ?? true }))
       .catch(() => setHealth({ status: 'error', modelLoaded: false }))

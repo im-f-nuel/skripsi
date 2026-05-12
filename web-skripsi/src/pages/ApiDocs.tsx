@@ -1,6 +1,7 @@
 import Icon from '../components/Icon'
 
-const getBaseUrl = () => `http://${window.location.hostname}:8000`
+const getBaseUrl = () =>
+  import.meta.env.VITE_API_URL ?? `http://${window.location.hostname}:8000`
 
 const endpoints = [
   {

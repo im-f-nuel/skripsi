@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Icon from '../components/Icon'
 import { recordDetection } from '../lib/session'
+import { apiUrl } from '../lib/api'
 
 const DISCRETE_CLASSES = ['pisang', 'kentang', 'jagung', 'roti_tawar', 'roti_utuh']
 const MAX_FILE_SIZE = 10 * 1024 * 1024
@@ -40,7 +41,7 @@ export default function DetectImage() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    fetch('/api/nutrition/sources')
+    fetch(apiUrl('/api/nutrition/sources'))
       .then((r) => r.json())
       .then((data) => setFatsecretAvailable(data.fatsecret ?? false))
       .catch(() => setFatsecretAvailable(false))
@@ -80,7 +81,7 @@ export default function DetectImage() {
     try {
       const fd1 = new FormData()
       fd1.append('file', file)
-      const jsonRes = await fetch('/api/predict/image', { method: 'POST', body: fd1 })
+      const jsonRes = await fetch(apiUrl('/api/predict/image'), { method: 'POST', body: fd1 })
       if (!jsonRes.ok) throw new Error('Gagal mendapatkan prediksi')
       const data = await jsonRes.json()
       dets = data.detections ?? []
@@ -89,7 +90,7 @@ export default function DetectImage() {
       if (dets.length > 0) {
         const fd2 = new FormData()
         fd2.append('file', file)
-        const renderRes = await fetch('/api/predict/image-render', { method: 'POST', body: fd2 })
+        const renderRes = await fetch(apiUrl('/api/predict/image-render'), { method: 'POST', body: fd2 })
         if (renderRes.ok) {
           const blob = await renderRes.blob()
           setRenderedImage(URL.createObjectURL(blob))
@@ -110,7 +111,7 @@ export default function DetectImage() {
         const uniqueClasses = [...new Set(dets.map((d) => d.class_name))]
         const results = await Promise.all(
           uniqueClasses.map((cls) =>
-            fetch(`/api/nutrition/${cls}?source=${nutritionSource}`).then((r) => (r.ok ? r.json() : null))
+            fetch(apiUrl(`/api/nutrition/${cls}?source=${nutritionSource}`)).then((r) => (r.ok ? r.json() : null))
           )
         )
         const map: Record<string, NutritionInfo> = {}
