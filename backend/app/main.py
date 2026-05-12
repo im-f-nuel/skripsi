@@ -19,9 +19,11 @@ from .usda import get_nutrition_usda, is_configured as usda_configured
 class Detection(BaseModel):
     """Single object detection result"""
     class_id: int = Field(..., description="Class ID from model", example=0)
-    class_name: str = Field(..., description="Human-readable class name", example="nasi_merah")
+    class_name: str = Field(..., description="Human-readable class name (setelah koreksi heuristic untuk roti)", example="nasi_merah")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Detection confidence score (0.0-1.0)", example=0.91)
     bbox: List[float] = Field(..., description="Bounding box coordinates [x1, y1, x2, y2] in pixels", example=[100.5, 200.3, 300.7, 400.9])
+    original_class_name: Optional[str] = Field(None, description="Class asli dari model sebelum koreksi heuristic (hanya muncul jika di-override)", example="roti_utuh")
+    bread_score: Optional[int] = Field(None, description="Score heuristic roti 0..4 (hanya untuk class roti_tawar/roti_utuh)", example=3)
 
     class Config:
         json_schema_extra = {

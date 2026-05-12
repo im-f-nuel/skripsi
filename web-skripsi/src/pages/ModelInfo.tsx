@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import Icon from '../components/Icon'
 
 const metrics = [
@@ -8,14 +9,14 @@ const metrics = [
 ]
 
 const foodClasses = [
-  { id: 0, name: 'nasi_putih', color: 'bg-green-100 text-green-700' },
-  { id: 1, name: 'nasi_merah', color: 'bg-red-100 text-red-700' },
-  { id: 2, name: 'roti_utuh', color: 'bg-yellow-100 text-yellow-700' },
-  { id: 3, name: 'roti_tawar', color: 'bg-orange-100 text-orange-700' },
-  { id: 4, name: 'mi_pasta', color: 'bg-blue-100 text-blue-700' },
-  { id: 5, name: 'kentang', color: 'bg-amber-100 text-amber-700' },
-  { id: 6, name: 'jagung', color: 'bg-lime-100 text-lime-700' },
-  { id: 7, name: 'pisang', color: 'bg-purple-100 text-purple-700' },
+  { id: 0, name: 'nasi_putih' },
+  { id: 1, name: 'nasi_merah' },
+  { id: 2, name: 'roti_utuh' },
+  { id: 3, name: 'roti_tawar' },
+  { id: 4, name: 'mi_pasta' },
+  { id: 5, name: 'kentang' },
+  { id: 6, name: 'jagung' },
+  { id: 7, name: 'pisang' },
 ]
 
 const specs = [
@@ -30,6 +31,12 @@ const specs = [
 ]
 
 export default function ModelInfo() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 80)
+    return () => clearTimeout(t)
+  }, [])
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -48,7 +55,10 @@ export default function ModelInfo() {
                 <h2 className="text-white text-base md:text-lg font-bold leading-tight">YOLOv8n — CarbFood Detector</h2>
                 <p className="text-green-300 text-xs md:text-sm mt-1">best.pt • Nano Architecture</p>
               </div>
-              <span className="px-2.5 py-1 bg-[#059669] text-white text-xs font-semibold rounded-full flex-shrink-0">Active</span>
+              <span className="flex items-center gap-1.5 text-xs text-green-300 flex-shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
+                Active
+              </span>
             </div>
           </div>
           <div className="px-4 md:px-6 py-4 md:py-5 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
@@ -75,8 +85,8 @@ export default function ModelInfo() {
                   </div>
                   <div className="h-2 bg-[#E5E7EB] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#059669] rounded-full transition-all"
-                      style={{ width: `${m.value * 100}%` }}
+                      className="h-full bg-[#059669] rounded-full transition-all duration-700 ease-out"
+                      style={{ width: mounted ? `${m.value * 100}%` : '0%' }}
                     />
                   </div>
                 </div>
@@ -96,7 +106,7 @@ export default function ModelInfo() {
             <div className="grid grid-cols-2 gap-2">
               {foodClasses.map((fc) => (
                 <div key={fc.id} className="flex items-center gap-2.5 p-2.5 rounded-lg bg-[#F9FAFB]">
-                  <span className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${fc.color}`}>
+                  <span className="w-6 h-6 rounded-md bg-[#E5E7EB] text-gray-500 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
                     {fc.id}
                   </span>
                   <span className="text-xs text-[#374151] font-medium truncate">{fc.name}</span>

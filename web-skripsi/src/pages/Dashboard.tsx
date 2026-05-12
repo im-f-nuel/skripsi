@@ -9,10 +9,10 @@ interface HealthStatus {
 }
 
 const modelCards = [
-  { label: 'Arsitektur', value: 'YOLOv8n (Nano)', icon: 'model_training', color: 'bg-blue-50 text-blue-600' },
-  { label: 'Jumlah Kelas', value: '8 Kelas', icon: 'restaurant', color: 'bg-green-50 text-green-600' },
-  { label: 'mAP@0.5', value: '92.1%', icon: 'gps_fixed', color: 'bg-purple-50 text-purple-600' },
-  { label: 'Waktu Inferensi', value: '< 3 detik', icon: 'bolt', color: 'bg-amber-50 text-amber-600' },
+  { label: 'Arsitektur', value: 'YOLOv8n (Nano)' },
+  { label: 'Jumlah Kelas', value: '8 Kelas' },
+  { label: 'mAP@0.5', value: '92.1%' },
+  { label: 'Waktu Inferensi', value: '< 3 detik' },
 ]
 
 export default function Dashboard() {
@@ -48,38 +48,29 @@ export default function Dashboard() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-4 md:space-y-6">
         {/* Status Backend */}
-        <div className={`rounded-xl border p-4 md:p-5 flex items-center gap-3 md:gap-5 ${
-          health.status === 'loading' ? 'bg-gray-50 border-gray-200' :
-          health.status === 'ok' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+        <div className={`bg-white rounded-lg border border-[#E5E7EB] border-l-4 px-5 py-3.5 flex items-center gap-3 ${
+          health.status === 'loading' ? 'border-l-gray-300' :
+          health.status === 'ok' ? 'border-l-[#059669]' : 'border-l-red-500'
         }`}>
-          <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-            health.status === 'loading' ? 'bg-gray-200' :
-            health.status === 'ok' ? 'bg-green-100' : 'bg-red-100'
-          }`}>
-            <Icon
-              name={health.status === 'loading' ? 'hourglass_empty' : health.status === 'ok' ? 'check_circle' : 'error'}
-              size={24}
-              className={health.status === 'loading' ? 'text-gray-400' : health.status === 'ok' ? 'text-green-600' : 'text-red-500'}
-            />
-          </div>
-          <div className="flex-1">
-            <div className={`font-semibold text-sm ${
-              health.status === 'loading' ? 'text-gray-600' :
-              health.status === 'ok' ? 'text-green-700' : 'text-red-700'
-            }`}>
+          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+            health.status === 'loading' ? 'bg-gray-300 animate-pulse' :
+            health.status === 'ok' ? 'bg-[#059669]' : 'bg-red-500'
+          }`} />
+          <div className="flex-1 min-w-0 flex items-baseline gap-2 flex-wrap">
+            <span className="text-sm font-semibold text-[#111827]">
               {health.status === 'loading' && 'Memeriksa koneksi backend...'}
               {health.status === 'ok' && 'Backend & Model Siap'}
               {health.status === 'error' && 'Backend Tidak Terhubung'}
-            </div>
-            <div className="text-xs text-gray-500 mt-0.5">
+            </span>
+            <span className="text-xs text-gray-400">
               {health.status === 'loading' && 'Mohon tunggu sebentar'}
               {health.status === 'ok' && 'Model best.pt berhasil dimuat — sistem siap melakukan inferensi'}
               {health.status === 'error' && 'Pastikan backend FastAPI berjalan di port 8000'}
-            </div>
+            </span>
           </div>
           {health.status !== 'loading' && (
-            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
-              health.status === 'ok' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'
+            <span className={`text-[11px] font-mono font-bold tracking-widest flex-shrink-0 ${
+              health.status === 'ok' ? 'text-[#059669]' : 'text-red-500'
             }`}>
               {health.status === 'ok' ? 'ONLINE' : 'OFFLINE'}
             </span>
@@ -89,16 +80,16 @@ export default function Dashboard() {
         {/* Model Cards */}
         <div>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Informasi Model</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            {modelCards.map((c) => (
-              <div key={c.label} className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-5">
-                <div className={`w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center mb-2 md:mb-3 ${c.color}`}>
-                  <Icon name={c.icon} size={17} />
+          <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
+            <div className="h-[3px] bg-[#059669]" />
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-[#F3F4F6]">
+              {modelCards.map((c) => (
+                <div key={c.label} className="px-5 py-4 md:py-5">
+                  <div className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{c.label}</div>
+                  <div className="text-xl md:text-2xl font-bold text-[#111827] leading-tight">{c.value}</div>
                 </div>
-                <div className="text-base md:text-lg font-bold text-[#111827] leading-tight">{c.value}</div>
-                <div className="text-xs text-gray-500 mt-0.5">{c.label}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
@@ -106,24 +97,31 @@ export default function Dashboard() {
           {/* Sesi ini */}
           <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-6 space-y-3 md:space-y-4">
             <h2 className="font-semibold text-[#111827] text-sm md:text-base">Statistik Sesi Ini</h2>
-            <div className="grid grid-cols-2 md:grid-cols-1 gap-0">
-              <div className="flex justify-between items-center py-2 md:py-2.5 border-b border-[#F3F4F6]">
-                <span className="text-xs md:text-sm text-gray-500">Gambar diproses</span>
-                <span className="text-xs md:text-sm font-bold text-[#111827]">{session.detectionCount}</span>
+            {session.detectionCount === 0 ? (
+              <div className="py-6 text-center">
+                <Icon name="image_search" size={28} className="text-gray-200 mx-auto mb-2" />
+                <p className="text-xs text-gray-400">Belum ada deteksi dalam sesi ini</p>
               </div>
-              <div className="flex justify-between items-center py-2 md:py-2.5 border-b border-[#F3F4F6]">
-                <span className="text-xs md:text-sm text-gray-500">Total objek</span>
-                <span className="text-xs md:text-sm font-bold text-[#111827]">{session.totalObjects}</span>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-1 gap-0">
+                <div className="flex justify-between items-center py-2 md:py-2.5 border-b border-[#F3F4F6]">
+                  <span className="text-xs md:text-sm text-gray-500">Gambar diproses</span>
+                  <span className="text-xs md:text-sm font-bold text-[#111827]">{session.detectionCount}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 md:py-2.5 border-b border-[#F3F4F6]">
+                  <span className="text-xs md:text-sm text-gray-500">Total objek</span>
+                  <span className="text-xs md:text-sm font-bold text-[#111827]">{session.totalObjects}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 md:py-2.5 border-b border-[#F3F4F6] col-span-2 md:col-span-1">
+                  <span className="text-xs md:text-sm text-gray-500">Kelas terakhir</span>
+                  <span className="text-xs md:text-sm font-bold text-[#111827]">{session.lastClass}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 md:py-2.5 col-span-2 md:col-span-1">
+                  <span className="text-xs md:text-sm text-gray-500">Terakhir deteksi</span>
+                  <span className="text-xs md:text-sm font-bold text-[#111827]">{session.lastTime}</span>
+                </div>
               </div>
-              <div className="flex justify-between items-center py-2 md:py-2.5 border-b border-[#F3F4F6] col-span-2 md:col-span-1">
-                <span className="text-xs md:text-sm text-gray-500">Kelas terakhir</span>
-                <span className="text-xs md:text-sm font-bold text-[#111827]">{session.lastClass}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 md:py-2.5 col-span-2 md:col-span-1">
-                <span className="text-xs md:text-sm text-gray-500">Terakhir deteksi</span>
-                <span className="text-xs md:text-sm font-bold text-[#111827]">{session.lastTime}</span>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Kelas Makanan */}
@@ -131,17 +129,17 @@ export default function Dashboard() {
             <h2 className="font-semibold text-[#111827] mb-3 md:mb-4 text-sm md:text-base">Kelas Makanan Karbohidrat</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {[
-                { id: 0, name: 'nasi_putih', color: 'bg-green-100 text-green-700' },
-                { id: 1, name: 'nasi_merah', color: 'bg-red-100 text-red-700' },
-                { id: 2, name: 'roti_utuh', color: 'bg-yellow-100 text-yellow-700' },
-                { id: 3, name: 'roti_tawar', color: 'bg-orange-100 text-orange-700' },
-                { id: 4, name: 'mi_pasta', color: 'bg-blue-100 text-blue-700' },
-                { id: 5, name: 'kentang', color: 'bg-amber-100 text-amber-700' },
-                { id: 6, name: 'jagung', color: 'bg-lime-100 text-lime-700' },
-                { id: 7, name: 'pisang', color: 'bg-purple-100 text-purple-700' },
+                { id: 0, name: 'nasi_putih' },
+                { id: 1, name: 'nasi_merah' },
+                { id: 2, name: 'roti_utuh' },
+                { id: 3, name: 'roti_tawar' },
+                { id: 4, name: 'mi_pasta' },
+                { id: 5, name: 'kentang' },
+                { id: 6, name: 'jagung' },
+                { id: 7, name: 'pisang' },
               ].map((fc) => (
                 <div key={fc.id} className="flex items-center gap-2 p-2.5 rounded-lg bg-[#F9FAFB] border border-[#F3F4F6]">
-                  <span className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${fc.color}`}>
+                  <span className="w-5 h-5 rounded bg-[#E5E7EB] text-gray-500 flex items-center justify-center text-[9px] font-bold flex-shrink-0">
                     {fc.id}
                   </span>
                   <span className="text-xs text-[#374151] font-medium truncate">{fc.name}</span>

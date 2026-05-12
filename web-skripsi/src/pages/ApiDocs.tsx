@@ -74,7 +74,7 @@ export default function ApiDocs() {
             <div className="flex items-center gap-2 md:gap-3 px-4 md:px-6 py-3 md:py-4 border-b border-[#E5E7EB] flex-wrap">
               <span className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded text-xs font-bold ${ep.methodColor}`}>{ep.method}</span>
               <code className="text-xs md:text-sm font-mono font-semibold text-[#111827]">{ep.path}</code>
-              <span className="md:ml-auto px-2 py-0.5 bg-green-50 text-green-700 text-xs font-medium rounded-full">200 OK</span>
+              <span className="md:ml-auto text-xs font-mono text-[#059669] font-semibold">200 OK</span>
             </div>
 
             {/* Endpoint body — 1 col on mobile, 3 col on desktop */}
