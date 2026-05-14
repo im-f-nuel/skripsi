@@ -9,7 +9,6 @@ os.environ.setdefault('ULTRALYTICS_AUTO_UPDATE', '0')
 
 from typing import List, Dict, Any, Optional
 import numpy as np
-import cv2
 from ultralytics import YOLO
 from ultralytics.utils import SETTINGS
 SETTINGS.update({'sync': False})
@@ -127,46 +126,70 @@ class YOLODetector:
         iou: float = 0.45
     ) -> np.ndarray:
         """
-        Run inference and return image with bounding boxes drawn
+        Run inference and return image with bounding boxes drawn.
 
-        Args:
-            image: Input image as numpy array (BGR format)
-            conf: Confidence threshold
-            iou: IoU threshold for NMS
-
-        Returns:
-            Image with bounding boxes and labels drawn
+        Non-bread classes: rendered via YOLO's native result.plot() (PIL font, anti-aliased).
+        Bread classes (roti_tawar/roti_utuh): rendered via Ultralytics Annotator with the
+        heuristic-corrected label, same visual style as YOLO native.
         """
+        import torch
+        from ultralytics.utils.plotting import Annotator, colors as yolo_colors
+
         if not self.is_loaded():
             raise RuntimeError("Model not loaded")
 
-        # Reuse predict() supaya rendering konsisten dgn class hasil koreksi heuristic
-        detections = self.predict(image, conf=conf, iou=iou)
+        results = self.model.predict(image, conf=conf, iou=iou, verbose=False)
 
-        if not detections:
+        if not results or len(results[0].boxes) == 0:
             return image
 
-        # Plot manual: bbox + label class hasil koreksi
-        rendered = image.copy()
-        for det in detections:
-            x1, y1, x2, y2 = [int(round(c)) for c in det["bbox"]]
-            label = f'{det["class_name"]} {det["confidence"]:.2f}'
-            # Warna BGR (deterministic dari class_id)
-            cid = det["class_id"]
-            color = (
-                int((cid * 67) % 200 + 55),
-                int((cid * 131) % 200 + 55),
-                int((cid * 199) % 200 + 55),
-            )
-            cv2.rectangle(rendered, (x1, y1), (x2, y2), color, 2)
-            (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
-            cv2.rectangle(
-                rendered, (x1, y1 - th - 8), (x1 + tw + 4, y1), color, -1
-            )
-            cv2.putText(
-                rendered, label, (x1 + 2, y1 - 4),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2,
-            )
+        result = results[0]
+        name_to_id = {v: k for k, v in self.model.names.items()}
+
+        bread_dets = []
+        non_bread_flags = []
+
+        for i in range(len(result.boxes)):
+            cls_id   = int(result.boxes.cls[i])
+            cls_name = self.model.names[cls_id]
+            conf_val = float(result.boxes.conf[i])
+            bbox     = result.boxes.xyxy[i].cpu().numpy().tolist()
+
+            if cls_name in BREAD_CLASSES:
+                non_bread_flags.append(False)
+                if cls_name == "roti_utuh":
+                    pred, _, _ = classify_bread_by_color(image, bbox)
+                    final_class = pred
+                    final_id    = name_to_id.get(pred, cls_id)
+                else:
+                    final_class = cls_name
+                    final_id    = cls_id
+                bread_dets.append({
+                    "class_id":   final_id,
+                    "class_name": final_class,
+                    "confidence": conf_val,
+                    "bbox":       bbox,
+                })
+            else:
+                non_bread_flags.append(True)
+
+        # Non-bread: bawaan YOLO (PIL font, warna palette resmi)
+        non_bread_mask = torch.tensor(non_bread_flags, dtype=torch.bool)
+        if non_bread_mask.any():
+            result.boxes = result.boxes[non_bread_mask]
+            rendered = result.plot()
+        else:
+            rendered = image.copy()
+
+        # Bread: Annotator dengan style persis sama YOLO tapi label sudah dikoreksi
+        if bread_dets:
+            annotator = Annotator(rendered)
+            for det in bread_dets:
+                label = f'{det["class_name"]} {det["confidence"]:.2f}'
+                color = yolo_colors(det["class_id"], bgr=True)
+                annotator.box_label(det["bbox"], label, color=color)
+            rendered = annotator.result()
+
         return rendered
 
     def get_model_info(self) -> Dict[str, Any]:
