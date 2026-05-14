@@ -39,6 +39,16 @@ export default function DetectImage() {
   const [fatsecretAvailable, setFatsecretAvailable] = useState<boolean | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const previewUrlRef = useRef<string | null>(null)
+  const renderedUrlRef = useRef<string | null>(null)
+
+  // Bebaskan object URL lama dari memory setiap kali diganti atau component unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
+      if (renderedUrlRef.current) URL.revokeObjectURL(renderedUrlRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     fetch(apiUrl('/api/nutrition/sources'))
@@ -56,8 +66,12 @@ export default function DetectImage() {
       setError('Format file tidak didukung. Gunakan JPG, PNG, BMP, TIFF, atau WebP')
       return
     }
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current)
+    if (renderedUrlRef.current) { URL.revokeObjectURL(renderedUrlRef.current); renderedUrlRef.current = null }
+    const url = URL.createObjectURL(f)
+    previewUrlRef.current = url
     setFile(f)
-    setPreview(URL.createObjectURL(f))
+    setPreview(url)
     setDetections([])
     setRenderedImage(null)
     setError(null)
@@ -93,7 +107,10 @@ export default function DetectImage() {
         const renderRes = await fetch(apiUrl('/api/predict/image-render'), { method: 'POST', body: fd2 })
         if (renderRes.ok) {
           const blob = await renderRes.blob()
-          setRenderedImage(URL.createObjectURL(blob))
+          if (renderedUrlRef.current) URL.revokeObjectURL(renderedUrlRef.current)
+          const rUrl = URL.createObjectURL(blob)
+          renderedUrlRef.current = rUrl
+          setRenderedImage(rUrl)
         }
         recordDetection([...new Set(dets.map((d) => d.class_name))], dets.length)
       }
@@ -126,6 +143,8 @@ export default function DetectImage() {
   }
 
   const handleReset = () => {
+    if (previewUrlRef.current) { URL.revokeObjectURL(previewUrlRef.current); previewUrlRef.current = null }
+    if (renderedUrlRef.current) { URL.revokeObjectURL(renderedUrlRef.current); renderedUrlRef.current = null }
     setFile(null)
     setPreview(null)
     setRenderedImage(null)
